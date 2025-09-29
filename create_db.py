@@ -1,36 +1,41 @@
 import sqlite3
 
-# SQLite3 is a simple database that stores data in a single file on your computer. 
-# It does not need a server, making it easy to use and super fast for small projects.
+def create_tables():
+    conn = sqlite3.connect('srp.db')
+    cursor = conn.cursor()
 
-def create_db():
-    """Function to create the database and tables if they do not exist."""
+    # Create users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            contact TEXT,
+            password TEXT NOT NULL,
+            securityQ TEXT,
+            securityA TEXT
+        )
+    ''')
 
-    # Connect to (or create) the database file 'srp.db'
-    con = sqlite3.connect(database="srp.db")
-
-    # Create a cursor to execute SQL commands
-    cur = con.cursor()
-
-    # Create 'course' table if it does not exist
-    cur.execute("""
+    # Create course table with user_id
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS course (
-            cid INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
             duration TEXT,
             charges TEXT,
-            description TEXT
+            description TEXT,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
-    """)
-    
-    # Commit changes to the database
-    con.commit()
+    ''')
 
-    # Create 'Student' table if it does not exist
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS Student (
-            roll INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
+    # Create student table with user_id
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS student (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            roll TEXT NOT NULL,
+            name TEXT NOT NULL,
             email TEXT,
             gender TEXT,
             dob TEXT,
@@ -40,30 +45,30 @@ def create_db():
             state TEXT,
             city TEXT,
             pin TEXT,
-            address TEXT
+            address TEXT,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
-    """)
+    ''')
 
-    # Commit changes to the database
-    con.commit()
-
-    cur.execute("""
+    # Create result table with user_id
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS result (
-            rid INTEGER PRIMARY KEY AUTOINCREMENT,
-            roll TEXT,
-            name TEXT,
-            course TEXT,
-            marks_ob TEXT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            roll TEXT NOT NULL,
+            name TEXT NOT NULL,
+            course TEXT NOT NULL,
+            marks_obtained TEXT,
             full_marks TEXT,
-            per TEXT
+            percentage TEXT,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
-    """)
-    
-    # Commit changes to the database
-    con.commit()
+    ''')
 
-    # Close the database connection
-    con.close()
+    conn.commit()
+    conn.close()
+    print("Database and tables created successfully.")
 
-# Call the function to create the database and tables
-create_db()
+if __name__ == "__main__":
+    create_tables()
